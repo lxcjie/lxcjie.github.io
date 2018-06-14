@@ -27,7 +27,7 @@
     <!--Title-->
 
 
-<title>Archives | LxcJie的技术随笔</title>
+<title>about_celery | LxcJie的技术随笔</title>
 
 
     <link rel="alternate" href="/atom.xml" title="LxcJie的技术随笔" type="application/atom+xml">
@@ -120,27 +120,108 @@
     <section class="content-wrap">
         <div class="container">
             <div class="row">
-                <main class="col-md-8 main-content ">
-                    <div id="main">
-  <div id="post-list">
-    <ul class="archives-post-list">
-    	<h1 class="info">年 月</h1>
+                <main class="col-md-8 main-content m-post">
+                    <p id="process"></p>
+<article class="post">
+    <div class="post-head">
+        <h1 id="about_celery">
+            
+	            about_celery
+            
+        </h1>
+        <div class="post-meta">
+    
+    
+    <span class="categories-meta fa-wrap">
+        <i class="fa fa-folder-open-o"></i>
+        <a href="/categories/框架学习">
+            框架学习
+        </a>
+    </span>
+    
+    
+    <span class="fa-wrap">
+        <i class="fa fa-tags"></i>
+        <span class="tags-meta">
+            
+                
+                    <a href="/tags/celery" title='celery'>
+                        celery
+                    </a>
+                
+                    <a href="/tags/分布式计算" title='分布式计算'>
+                        分布式计算
+                    </a>
+                
+            
+        </span>
+    </span>
+    
+
+    
         
-          <li class="post-items" _href="/2018/06/14/about-celery/">
-            <h3 class="post-item-title">
-            	<a href="/2018/06/14/about-celery/"> about_celery </a>
-            </h3>  
-          </li>
-        
-          <li class="post-items" _href="/2018/05/21/Hexo-GitPage环境搭建/">
-            <h3 class="post-item-title">
-            	<a href="/2018/05/21/Hexo-GitPage环境搭建/"> Hexo+GitHubPages搭建自己的博客 </a>
-            </h3>  
-          </li>
-        
-    </ul>
-  </div>
+        <span class="fa-wrap">
+            <i class="fa fa-clock-o"></i>
+            <span class="date-meta">2018/06/14</span>
+        </span>
+    
 </div>
+
+            
+            
+    </div>
+    
+    <div class="post-body post-content">
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Celery是一个异步任务的调度工具。全称是 Distributed Task Queue，分布式任务队列分布式决定了可以有多个worker存在，队列表示其是异步操作，即存在一个提出任务需求的工头，和一群等着被分配工作的码农。</p>
+<h2 id="Celery介绍"><a href="#Celery介绍" class="headerlink" title="Celery介绍"></a>Celery介绍</h2><p>在Celery中几个基本的概念，需要先了解下，不然不知道为什么要安装下面的东西。概念：Broker、Backend。</p>
+<h3 id="什么是broker？"><a href="#什么是broker？" class="headerlink" title="什么是broker？"></a>什么是broker？</h3><p>broker是一个消息传输的中间件，可以理解为一个邮箱。每当应用程序调用celery的异步任务的时候，会向broker传递消息，而后celery的worker将会取到消息，进行对应的程序执行。好吧，这个邮箱可以看成是一个消息队列。其中Broker的中文意思是经纪人，其实就是一开始说的消息队列，用来发送和接受消息。这个Broker有几个方案可供选择：RabbitMQ (消息队列)，Redis（缓存数据库），数据库（不推荐），等等</p>
+<h3 id="什么是backend？"><a href="#什么是backend？" class="headerlink" title="什么是backend？"></a>什么是backend？</h3><p>通常程序发送的消息，发完就完了，可能都不知道对方时候接受了。为此，celery实现了一个backend，用于存储这些消息以及celery执行的一些消息和结果。Backend是在Celery的配置中的一个配置项 CELERY_RESULT_BACKEND ，作用是保存结果和状态，如果你需要跟踪任务的状态，那么需要设置这一项，可以是Database backend，也可以是Cache backend，具体可以参考这里： CELERY_RESULT_BACKEND 。</p>
+<p>对于 brokers，官方推荐是 rabbitmq 和 redis，至于 backend，就是数据库。为了简单可以都使用 redis。</p>
+<p>这次的例子都使用Redis作为Broker和Backend。</p>
+
+    </div>
+
+    <div class="post-footer">
+        <div>
+            
+                转载声明：商业转载请联系作者获得授权,非商业转载请注明出处 © <a href="http://lxcjie.github.io" target="_blank">LxcJie</a>
+            
+        </div>
+        <div>
+            
+        </div>
+    </div>
+</article>
+
+<div class="article-nav prev-next-wrap clearfix">
+    
+    
+        <a href="/2018/05/21/Hexo-GitPage环境搭建/" class="next-post btn btn-default" title='Hexo+GitHubPages搭建自己的博客'>
+            <span class="hidden-lg">下一篇</span>
+            <span class="hidden-xs">Hexo+GitHubPages搭建自己的博客</span><i class="fa fa-angle-right fa-fw"></i>
+        </a>
+    
+</div>
+
+
+    <div id="comments">
+        
+	
+<div id="lv-container" data-id="city" data-uid="MTAyMC8zNjU0OC8xMzA4Mw==">
+  <script type="text/javascript">
+     (function(d, s) {
+         var j, e = d.getElementsByTagName(s)[0];
+         if (typeof LivereTower === 'function') { return; }
+         j = d.createElement(s);
+         j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+         j.async = true;
+         e.parentNode.insertBefore(j, e);
+     })(document, 'script');
+  </script>
+</div>
+
+
+    </div>
 
 
 

@@ -177,7 +177,6 @@
 <li>申请GitHub账户，并建立GitHubPages</li>
 <li>安装Node.js，Hexo</li>
 <li>Hexo常用命令</li>
-<li>搭建自己的第一个博客</li>
 </ol>
 <h2 id="详细"><a href="#详细" class="headerlink" title="详细"></a>详细</h2><h3 id="1-申请GitHub账户，并建立GitHubPages"><a href="#1-申请GitHub账户，并建立GitHubPages" class="headerlink" title="1. 申请GitHub账户，并建立GitHubPages"></a>1. 申请GitHub账户，并建立GitHubPages</h3><p>作为前提，你需要有一个<a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>的账户，详细申请步骤就不提了。下面我们只介绍怎么申请一个GitHubPages。</p>
 <blockquote>
@@ -189,16 +188,22 @@
 <p>什么是 Hexo？<br>Hexo 是一个快速、简洁且高效的博客框架。Hexo 使用 Markdown（或其他渲染引擎）解析文章，在几秒内，即可利用靓丽的主题生成静态网页。</p>
 </blockquote>
 <p>安装 Hexo 相当简单。然而在安装前，您必须检查电脑中是否已安装下列应用程序：</p>
-<ol>
+<ul>
 <li>Node.js  <a href="https://nodejs.org/en" target="_blank" rel="noopener">Node.js官网</a></li>
 <li>Git  <a href="https://git-scm.com/" target="_blank" rel="noopener">Git官网</a></li>
-</ol>
+</ul>
 <p>如果您的电脑中已经安装上述必备程序，接下来只需要使用 npm 即可完成 Hexo 的安装。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm install -g hexo-cli</span><br></pre></td></tr></table></figure></p>
 <h3 id="3-Hexo常用命令-详细请看这里"><a href="#3-Hexo常用命令-详细请看这里" class="headerlink" title="3. Hexo常用命令 详细请看这里"></a>3. Hexo常用命令 <a href="https://hexo.io/zh-cn/docs/" target="_blank" rel="noopener">详细请看这里</a></h3><p>安装完以后，就可以通过Hexo创建自己的博客了。</p>
 <h3 id="【建站】"><a href="#【建站】" class="headerlink" title="【建站】"></a>【建站】</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ hexo init myblog</span><br><span class="line">$ cd myblog</span><br><span class="line">$ npm install</span><br></pre></td></tr></table></figure>
 <h3 id="【创建文章并编辑】"><a href="#【创建文章并编辑】" class="headerlink" title="【创建文章并编辑】"></a>【创建文章并编辑】</h3><p>下面这个命令会创建一个MarkDown(.md)文件，我们只需要编辑这个MarkDown文件来撰写自己的博客内容。关于MarkDown的写法，请参照： <a href="http://www.markdown.cn" target="_blank" rel="noopener">MarkDown教程</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new myfirstblog</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>Markdown是一种可以使用普通文本编辑器编写的标记语言，通过简单的标记语法，它可以使普通文本内容具有一定的格式。</p>
+</blockquote>
 <p>执行下面的命令，可以把MarkDown文件转换为HTML页面<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate (可以简写为hexo g)</span><br></pre></td></tr></table></figure></p>
 <h3 id="【编译】"><a href="#【编译】" class="headerlink" title="【编译】"></a>【编译】</h3><p>执行下面的命令，自动启动一个Web服务，进行页面的预览，默认地址是<a href="http://localhost:4000" target="_blank" rel="noopener">http://localhost:4000</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server (可以简写为hexo s)</span><br></pre></td></tr></table></figure></p>
+<h3 id="【部署】"><a href="#【部署】" class="headerlink" title="【部署】"></a>【部署】</h3><p>最后，我们需要把我们的成果部署到自己的GithubPages上面。对于hexo来说，只需要执行下面的命令就可以了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy (可以简写为hexo d)</span><br></pre></td></tr></table></figure></p>
+<p>但是在执行这个命令之前，需要安装Node的git支持并配置Hexo的_config.yml。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure></p>
+<p>_config.yml (配置文件路径例： 上面的hexo init myblog执行后的myblog目录下)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repository: https://user:password@github.com/xxx/xxx.github.io.git</span><br><span class="line">  branch: master</span><br></pre></td></tr></table></figure></p>
 
     </div>
 
@@ -215,6 +220,11 @@
 </article>
 
 <div class="article-nav prev-next-wrap clearfix">
+    
+        <a href="/2018/06/14/about-celery/" class="pre-post btn btn-default" title='about_celery'>
+            <i class="fa fa-angle-left fa-fw"></i><span class="hidden-lg">上一篇</span>
+            <span class="hidden-xs">about_celery</span>
+        </a>
     
     
 </div>
@@ -260,7 +270,7 @@
         
     <div class="widget">
         <h3 class="title">Categories</h3>
-        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/环境搭建/"><i class="fa" aria-hidden="true">环境搭建</i></a><span class="category-list-count">1</span></li></ul>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/框架学习/"><i class="fa" aria-hidden="true">框架学习</i></a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/环境搭建/"><i class="fa" aria-hidden="true">环境搭建</i></a><span class="category-list-count">1</span></li></ul>
     </div>
 
 
@@ -268,7 +278,7 @@
         
     <div class="widget">
       <h3 class="title">Archives</h3>
-        <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/"><i class="fa" aria-hidden="true">May 2018</i></a><span class="archive-list-count">1</span></li></ul>
+        <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/"><i class="fa" aria-hidden="true">June 2018</i></a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/"><i class="fa" aria-hidden="true">May 2018</i></a><span class="archive-list-count">1</span></li></ul>
     </div>
 
 
@@ -277,7 +287,7 @@
   <div class="widget">
     <h3 class="title">Tag Cloud</h3>
     <div class="content tag-cloud">
-        <a href="/tags/GitPage/" style="font-size: 10px;">GitPage</a> <a href="/tags/Hexo/" style="font-size: 10px;">Hexo</a>
+        <a href="/tags/GitPage/" style="font-size: 10px;">GitPage</a> <a href="/tags/Hexo/" style="font-size: 10px;">Hexo</a> <a href="/tags/celery/" style="font-size: 10px;">celery</a> <a href="/tags/分布式计算/" style="font-size: 10px;">分布式计算</a>
     </div>
   </div>
 
