@@ -27,7 +27,7 @@
     <!--Title-->
 
 
-<title>about_celery | LxcJie的技术随笔</title>
+<title>使用Celery进行分布式计算 | LxcJie的技术随笔</title>
 
 
     <link rel="alternate" href="/atom.xml" title="LxcJie的技术随笔" type="application/atom+xml">
@@ -124,9 +124,9 @@
                     <p id="process"></p>
 <article class="post">
     <div class="post-head">
-        <h1 id="about_celery">
+        <h1 id="使用Celery进行分布式计算">
             
-	            about_celery
+	            使用Celery进行分布式计算
             
         </h1>
         <div class="post-meta">
@@ -145,12 +145,16 @@
         <span class="tags-meta">
             
                 
-                    <a href="/tags/celery" title='celery'>
-                        celery
+                    <a href="/tags/Celery" title='Celery'>
+                        Celery
                     </a>
                 
                     <a href="/tags/分布式计算" title='分布式计算'>
                         分布式计算
+                    </a>
+                
+                    <a href="/tags/Python" title='Python'>
+                        Python
                     </a>
                 
             
@@ -172,12 +176,41 @@
     </div>
     
     <div class="post-body post-content">
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Celery是一个异步任务的调度工具。全称是 Distributed Task Queue，分布式任务队列分布式决定了可以有多个worker存在，队列表示其是异步操作，即存在一个提出任务需求的工头，和一群等着被分配工作的码农。</p>
-<h2 id="Celery介绍"><a href="#Celery介绍" class="headerlink" title="Celery介绍"></a>Celery介绍</h2><p>在Celery中几个基本的概念，需要先了解下，不然不知道为什么要安装下面的东西。概念：Broker、Backend。</p>
-<h3 id="什么是broker？"><a href="#什么是broker？" class="headerlink" title="什么是broker？"></a>什么是broker？</h3><p>broker是一个消息传输的中间件，可以理解为一个邮箱。每当应用程序调用celery的异步任务的时候，会向broker传递消息，而后celery的worker将会取到消息，进行对应的程序执行。好吧，这个邮箱可以看成是一个消息队列。其中Broker的中文意思是经纪人，其实就是一开始说的消息队列，用来发送和接受消息。这个Broker有几个方案可供选择：RabbitMQ (消息队列)，Redis（缓存数据库），数据库（不推荐），等等</p>
-<h3 id="什么是backend？"><a href="#什么是backend？" class="headerlink" title="什么是backend？"></a>什么是backend？</h3><p>通常程序发送的消息，发完就完了，可能都不知道对方时候接受了。为此，celery实现了一个backend，用于存储这些消息以及celery执行的一些消息和结果。Backend是在Celery的配置中的一个配置项 CELERY_RESULT_BACKEND ，作用是保存结果和状态，如果你需要跟踪任务的状态，那么需要设置这一项，可以是Database backend，也可以是Cache backend，具体可以参考这里： CELERY_RESULT_BACKEND 。</p>
-<p>对于 brokers，官方推荐是 rabbitmq 和 redis，至于 backend，就是数据库。为了简单可以都使用 redis。</p>
-<p>这次的例子都使用Redis作为Broker和Backend。</p>
+        <h2 id="Celery介绍"><a href="#Celery介绍" class="headerlink" title="Celery介绍"></a>Celery介绍</h2><p>Celery是一个基于Python的异步任务调度工具。全称是 Distributed Task Queue，分布式任务队列分布式决定了可以有多个worker存在，队列表示其是异步操作，即存在一个提出任务需求的生产车，和一堆等待执行任务的消费者。即典型的生产者消费者模式问题。</p>
+<blockquote>
+<p>为了更形象的理解消息队列和生产者消费者模式，这里有一个比较有意思的类比：<br>1，生产者： 勤劳的妈妈 （User）<br>2，消息队列： 餐桌 （Broker）<br>3，消费者： 看着电视吃着饭的你 （Worker）</p>
+<p>妈妈做好饭以后，把饭菜放到餐桌上，代表生产者产生事件并放入消息队列。这个时候妈妈不需要等待，可以继续做下一道菜。解决了阻塞问题。</p>
+<p>而看着电视的你，就是一个消费者，等你想吃饭了，直接从桌子上拿就可以了， 并且如果发现饭太多吃不完了，也可以召集所有肚子饿的兄弟姐妹一起吃，解决消费者处理能力的瓶颈问题。放到Celery上面就是增加Worker的服务器数量就可以了。</p>
+</blockquote>
+<p>Celery的架构由四部分组成，任务发布者（User或者Task），消息中间件（Message Broker），任务执行单元（Worker）和任务执行结果存储（Backend）组成。</p>
+<p><img src="/images/celery_frame.png" alt=""></p>
+<p>下面还有一个更详细的图：<br><img src="/images/celery_detail.png" alt=""></p>
+<h3 id="1-任务发布者-User或者Task-相当于例子中的妈妈"><a href="#1-任务发布者-User或者Task-相当于例子中的妈妈" class="headerlink" title="1) 任务发布者(User或者Task) (相当于例子中的妈妈)"></a>1) 任务发布者(User或者Task) (相当于例子中的妈妈)</h3><p>包含异步任务和定时任务。其中，异步任务通常在业务逻辑中被触发并发往任务队列，而定时任务由Celery Beat进程周期性地将任务发往任务队列。</p>
+<h3 id="2-消息中间件-Message-Broker-相当于例子中的餐桌"><a href="#2-消息中间件-Message-Broker-相当于例子中的餐桌" class="headerlink" title="2) 消息中间件(Message Broker)(相当于例子中的餐桌)"></a>2) 消息中间件(Message Broker)(相当于例子中的餐桌)</h3><p>Celery本身不提供消息服务，但是可以方便的和第三方提供的消息中间件集成。<br>包括：RabbitMQ，Redis，MongoDB等等。</p>
+<h3 id="3-任务执行单元-Worker-相当于例子中的你"><a href="#3-任务执行单元-Worker-相当于例子中的你" class="headerlink" title="3) 任务执行单元(Worker)(相当于例子中的你)"></a>3) 任务执行单元(Worker)(相当于例子中的你)</h3><p>Worker是Celery提供的任务执行的单元，Worker并发的运行在分布式的系统节点中。</p>
+<h3 id="4-任务结果存储-Backend-例子里面没有相应的对应，如果非要说一个，那就是你告诉妈妈，吃饱了并写到一张纸上"><a href="#4-任务结果存储-Backend-例子里面没有相应的对应，如果非要说一个，那就是你告诉妈妈，吃饱了并写到一张纸上" class="headerlink" title="4) 任务结果存储(Backend)(例子里面没有相应的对应，如果非要说一个，那就是你告诉妈妈，吃饱了并写到一张纸上)"></a>4) 任务结果存储(Backend)(例子里面没有相应的对应，如果非要说一个，那就是你告诉妈妈，吃饱了并写到一张纸上)</h3><p>Backend用来存储Worker执行的任务的结果，Celery支持以不同方式存储任务的结果，包括AMQP, redis，memcached, mongodb，SQLAlchemy, Django ORM，Apache Cassandra, ronCache等。</p>
+<h2 id="Celery及Redis的安装"><a href="#Celery及Redis的安装" class="headerlink" title="Celery及Redis的安装"></a>Celery及Redis的安装</h2><p>首先需要安装消息中间件（在Celery帮助文档中称呼为中间人Broker，也就是例子的餐桌），可以安装RabbitMQ或者Redis。这里我们选择Redis作为Broker。想深入了解Redis，请参照<a href="http://www.runoob.com/redis/redis-tutorial.html" target="_blank" rel="noopener">这里</a>。</p>
+<p>安装Redis，它的安装比较简单。<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ pip install redis</span><br></pre></td></tr></table></figure></p>
+<p>接下来安装Celery。<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ pip install celery</span><br></pre></td></tr></table></figure></p>
+<p>注意，这里忽略了Python以及Pip的安装过程，请自行<a href="https://www.baidu.com/s?ie=utf-8&amp;f=8&amp;rsv_bp=0&amp;rsv_idx=1&amp;tn=baidu&amp;wd=python&amp;rsv_pq=d02d5f8c000112af&amp;rsv_t=2a45nsh%2Bc15AFok6fRN1rGy9%2F6kd3kuG%2BXEduMU%2FpKqbLc%2B%2FzubnpztYEu4&amp;rqlang=cn&amp;rsv_enter=1&amp;rsv_sug3=7&amp;rsv_sug1=5&amp;rsv_sug7=101&amp;rsv_sug2=0&amp;inputT=7&amp;rsv_sug4=1899&amp;rsv_sug=2" target="_blank" rel="noopener">度娘</a>。</p>
+<h2 id="Celery的HelloWorld"><a href="#Celery的HelloWorld" class="headerlink" title="Celery的HelloWorld"></a>Celery的HelloWorld</h2><p>码农的习惯都一样，学习任何东西都想马上写一个HelloWorld出来，这里也不例外，我们实现一个最简单的HelloWorld。一共需要三个步骤：</p>
+<ol>
+<li>定义任务函数。</li>
+<li>运行Celery服务。</li>
+<li>客户应用程序的调用。</li>
+</ol>
+<p>首先，让我们来定义任务函数<br>[task.py]<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 导入celery的包</span></span><br><span class="line"><span class="keyword">from</span> celery <span class="keyword">import</span> Celery  </span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置Broker，这里选择Redis的数据库5</span></span><br><span class="line">broker = <span class="string">'redis://127.0.0.1:6379/5'</span>  </span><br><span class="line"><span class="comment"># 配置Backend，这里选择Redis的数据库6</span></span><br><span class="line">backend = <span class="string">'redis://127.0.0.1:6379/6'</span>  </span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动Celery的服务</span></span><br><span class="line">app = Celery(<span class="string">'tasks'</span>, broker=broker, backend=backend)  </span><br><span class="line"></span><br><span class="line"><span class="comment"># 定制一个加法任务(注意，这里的app是第10行定义的app)</span></span><br><span class="line"><span class="meta">@app.task  </span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">add</span><span class="params">(x, y)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> x + y</span><br></pre></td></tr></table></figure></p>
+<p>接下来，让我们运行Celery服务。<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 注意，其中的task就是task.py的文件名，否则找不到 其它的参数固定</span><br><span class="line">celery -A task worker --loglevel=info</span><br></pre></td></tr></table></figure></p>
+<p>执行结果如下，说明启动成功：<br><img src="/images/celery_started.png" alt=""></p>
+<p>最后，在客户端完成Celery的调用。这里的客户端我们就选择普通的CMD来进行。<br>这里以Windows为例，我们先启动命令行程序，(注意要进入task.py相应的目录下)，然后输入Python进入交互界面，就可以进行调用了。如下：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ python</span><br><span class="line">$ &gt;&gt;&gt; <span class="keyword">from</span> task <span class="keyword">import</span> add</span><br><span class="line">$ &gt;&gt;&gt; res = add.delay(<span class="number">2</span>, <span class="number">2</span>)</span><br><span class="line">$ &gt;&gt;&gt; &lt;AsyncResult: <span class="number">6</span>fdb0629<span class="number">-4</span>beb<span class="number">-4</span>eb7-be47-f22be1395e1d&gt;</span><br><span class="line">$ &gt;&gt;&gt; res.result</span><br><span class="line">$ &gt;&gt;&gt; <span class="number">4</span></span><br></pre></td></tr></table></figure></p>
+<p>再附一张真正的执行结果：<br><img src="/images/celery_result.png" alt=""></p>
+<p>到此为止，一个简单的HelloWorld就完成了。 下面我们会继续深入。</p>
+<h2 id="Celery的继续深入"><a href="#Celery的继续深入" class="headerlink" title="Celery的继续深入"></a>Celery的继续深入</h2><p>上面的HelloWorld里面，我们把所有的东西都放在了一个Python文件中，包括work和broker。<br>真正的项目开发中，我们肯定要分开管理，下面就用一个实例进行说明。</p>
+<p>下面的例子中，我们的文件夹结构如下:<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">D:</span></span><br><span class="line"><span class="function"> └<span class="title">proj</span></span></span><br><span class="line"><span class="function">  ├ <span class="title">celery.py</span>  #名字必须是<span class="title">celery.py</span></span></span><br><span class="line"><span class="function">  ├ <span class="title">config.py</span></span></span><br><span class="line"><span class="function">  └ <span class="title">tasks.py</span></span></span><br></pre></td></tr></table></figure></p>
+<p>下面是具体代码（说明请参照注释）</p>
+<p>[celery.py]<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"><span class="comment"># -*- coding=utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> absolute_import</span><br><span class="line"><span class="keyword">from</span> celery <span class="keyword">import</span> Celery</span><br><span class="line"></span><br><span class="line">app1 = Celery(<span class="string">'proj1'</span>, include=[<span class="string">'proj.tasks'</span>])</span><br><span class="line">app1.config_from_object(<span class="string">'proj.config'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    app1.start()</span><br></pre></td></tr></table></figure></p>
+<p>[config.py]<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python  </span></span><br><span class="line"><span class="comment"># -*- coding:utf-8 -*-  </span></span><br><span class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> absolute_import  </span><br><span class="line"></span><br><span class="line">CELERY_RESULT_BACKEND = <span class="string">'redis://127.0.0.1:6379/5'</span>  </span><br><span class="line">BROKER_URL = <span class="string">'redis://127.0.0.1:6379/6'</span></span><br></pre></td></tr></table></figure></p>
+<p>[tasks.py]<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"><span class="comment"># -*- coding:utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> absolute_import</span><br><span class="line"><span class="keyword">from</span> proj.celery <span class="keyword">import</span> app1</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="meta">@app1.task</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">add</span><span class="params">(x, y)</span>:</span></span><br><span class="line">    time.sleep(<span class="number">3</span>)</span><br><span class="line">    <span class="keyword">return</span> x + y</span><br></pre></td></tr></table></figure></p>
 
     </div>
 
@@ -261,7 +294,7 @@
   <div class="widget">
     <h3 class="title">Tag Cloud</h3>
     <div class="content tag-cloud">
-        <a href="/tags/GitPage/" style="font-size: 10px;">GitPage</a> <a href="/tags/Hexo/" style="font-size: 10px;">Hexo</a> <a href="/tags/celery/" style="font-size: 10px;">celery</a> <a href="/tags/分布式计算/" style="font-size: 10px;">分布式计算</a>
+        <a href="/tags/Celery/" style="font-size: 10px;">Celery</a> <a href="/tags/GitPage/" style="font-size: 10px;">GitPage</a> <a href="/tags/Hexo/" style="font-size: 10px;">Hexo</a> <a href="/tags/Python/" style="font-size: 10px;">Python</a> <a href="/tags/分布式计算/" style="font-size: 10px;">分布式计算</a>
     </div>
   </div>
 
